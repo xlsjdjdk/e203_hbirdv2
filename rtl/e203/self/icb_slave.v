@@ -15,10 +15,11 @@
 // 2023/03/21   Lisp           
 // -FHDR----------------------------------------------------------------------------
 
-`define AUGEND_ADDR    12'h000
-`define ADDEND_ADDR    12'h4
-`define CONTROL_ADDR   12'h8
-`define SUM_ADDR       12'hc
+`define AUGEND_ADDR    12'h00
+`define ADDEND_ADDR    12'h04
+`define CTRL_ADDR      12'h08
+`define OFSIGN_ADDR    12'h0c
+`define SUM_ADDR       12'h10
 
 
 module icb_slave(
@@ -39,19 +40,20 @@ module icb_slave(
     input           clk,
     input           rst_n,
 
-    // reg output
+    // reg IO
     output  reg [31:0]  AUGEND,
     output  reg [31:0]  ADDEND,
-    output  reg CONTROL,
-    input   [31:0]  SUM
+    output  reg [31:0]  CTRL,
+    
+    input       [31:0]  OFSIGN,
+    input       [31:0]  SUM
 
 );
 
 assign icb_rsp_err = 1'b0;
 
 // cmd ready, icb_cmd_ready
-always@(negedge rst_n or posedge clk)
-begin
+always@(negedge rst_n or posedge clk) begin
     if(!rst_n) begin
         icb_cmd_ready <= 1'b0;
     end
@@ -69,33 +71,32 @@ begin
 end
 
 // ADDR and PARAM setting
-always@(negedge rst_n or posedge clk)
-begin
+always@(negedge rst_n or posedge clk) begin
     if(!rst_n) begin
         AUGEND <= 32'h0;
         ADDEND <= 32'h0;
-        CONTROL <= 32'h0;
+        CTRL <= 32'h0;
     end
     else begin
         if(icb_cmd_valid & icb_cmd_ready & !icb_cmd_read) begin
             case(icb_cmd_addr[11:0])
                 `AUGEND_ADDR:  AUGEND <= icb_cmd_wdata;
                 `ADDEND_ADDR:  ADDEND <= icb_cmd_wdata;
-                `CONTROL_ADDR:  CONTROL <= icb_cmd_wdata;
+                `CTRL_ADDR  :  CTRL   <= icb_cmd_wdata;
             endcase
         end
         else begin
-            AUGEND <= AUGEND;
-            ADDEND <= ADDEND;
-            CONTROL <= CONTROL;
+            if (CTRL[1]) begin
+                AUGEND <= 32'h0;
+                ADDEND <= 32'h0;
+                CTRL <= {31'h0, CTRL[0]};
+            end
         end
     end
 end
 
-
 // response valid, icb_rsp_valid
-always@(negedge rst_n or posedge clk)
-begin
+always@(negedge rst_n or posedge clk) begin
     if(!rst_n) begin
         icb_rsp_valid <= 1'h0;
     end
@@ -113,8 +114,7 @@ begin
 end
 
 // read data, icb_rsp_rdata
-always@(negedge rst_n or posedge clk)
-begin
+always@(negedge rst_n or posedge clk) begin
     if(!rst_n) begin
         icb_rsp_rdata <= 32'h0;
     end
@@ -123,8 +123,9 @@ begin
             case(icb_cmd_addr[11:0])
                 `AUGEND_ADDR:  icb_rsp_rdata <= AUGEND;
                 `ADDEND_ADDR:  icb_rsp_rdata <= ADDEND;
-                `CONTROL_ADDR:  icb_rsp_rdata <= CONTROL;
-                `SUM_ADDR: icb_rsp_rdata <= SUM;
+                `CTRL_ADDR  :  icb_rsp_rdata <= CTRL;
+                `OFSIGN_ADDR:  icb_rsp_rdata <= OFSIGN;
+                `SUM_ADDR   :  icb_rsp_rdata <= SUM;
             endcase
         end
         else begin

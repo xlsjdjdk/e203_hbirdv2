@@ -37,33 +37,37 @@ output      [31:0]              icb_rsp_rdata,
 output                          icb_rsp_err
 
 );
-    wire [31:0]                 ADDEND                         ;
-    wire [31:0]                 AUGEND                         ;
-    wire                        CONTROL                         ;
-    wire [31:0]                 SUM                        ;
+    wire [31:0]                 ADDEND      ;
+    wire [31:0]                 AUGEND      ;
+    wire [31:0]                 CTRL        ;
+    wire [31:0]                 SUM         ;
+    wire                        OFSIGN      ;
     
 
 // slave interface
 icb_slave icb_slave_u(
     
-        .icb_cmd_valid          (icb_cmd_valid                  ), //input
-        .icb_cmd_ready          (icb_cmd_ready                  ), //output
-        .icb_cmd_read           (icb_cmd_read                   ), //input
-        .icb_cmd_addr           (icb_cmd_addr[31:0]             ), //input
-        .icb_cmd_wdata          (icb_cmd_wdata[31:0]            ), //input
-        .icb_cmd_wmask          (icb_cmd_wmask[3:0]             ), //input
-        .icb_rsp_valid          (icb_rsp_valid                  ), //output
-        .icb_rsp_ready          (icb_rsp_ready                  ), //input
-        .icb_rsp_rdata          (icb_rsp_rdata[31:0]            ), //output
-        .icb_rsp_err            (icb_rsp_err                    ), //output
-        .clk                    (clk                            ), //input
-        .rst_n                  (rst_n                          ), //input
-        .AUGEND                 (ADDEND[31:0]               ), //output
-        .ADDEND                 (AUGEND[31:0]               ), //output]
-        .CONTROL                (CONTROL               ), //output
-        .SUM                    (SUM   [31:0]            )
+        .icb_cmd_valid          (icb_cmd_valid          ), 
+        .icb_cmd_ready          (icb_cmd_ready          ), 
+        .icb_cmd_addr           (icb_cmd_addr[31:0]     ), 
+        .icb_cmd_read           (icb_cmd_read           ), 
+        .icb_cmd_wdata          (icb_cmd_wdata[31:0]    ), 
+        .icb_cmd_wmask          (icb_cmd_wmask[3:0]     ), 
+        .icb_rsp_valid          (icb_rsp_valid          ), 
+        .icb_rsp_ready          (icb_rsp_ready          ), 
+        .icb_rsp_rdata          (icb_rsp_rdata[31:0]    ), 
+        .icb_rsp_err            (icb_rsp_err            ), 
+        .clk                    (clk                    ), 
+        .rst_n                  (rst_n                  ), 
+        .AUGEND                 (ADDEND[31:0]           ), 
+        .ADDEND                 (AUGEND[31:0]           ), 
+        .CTRL                   (CTRL                   ), 
+        .SUM                    (SUM   [31:0]           ),
+        .OFSIGN                 ({31'd0,OFSIGN}         )
     );
 
+    wire enable = CTRL[0];
+    wire clear  = CTRL[1];
 
 // control
 adder u_adder(
@@ -71,7 +75,10 @@ adder u_adder(
     .rst_n             (rst_n),
     .in1               (AUGEND[31:0]),
     .in2               (ADDEND[31:0]),
-    .out               (SUM[31:0])
+    .enable            (enable),
+    .clear             (clear),
+    .out               (SUM[31:0]),
+    .overflow          (OFSIGN)
 );
 endmodule
 
