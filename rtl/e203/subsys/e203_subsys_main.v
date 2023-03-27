@@ -712,6 +712,18 @@ e203_subsys_clint u_e203_subsys_clint(
   wire                     qspi0_ro_icb_rsp_ready;
   wire [32-1:0]            qspi0_ro_icb_rsp_rdata;
 
+  //@<your_e203>/rtl/subsys/e203/e203_subsys_main.v
+  wire          adder_cfg_icb_cmd_valid;
+  wire          adder_cfg_icb_cmd_ready;
+  wire          adder_cfg_icb_cmd_read;
+  wire [31:0]   adder_cfg_icb_cmd_addr;
+  wire [31:0]   adder_cfg_icb_cmd_wdata;
+  wire [3:0]    adder_cfg_icb_cmd_wmask;
+
+  wire          adder_cfg_icb_rsp_valid;
+  wire          adder_cfg_icb_rsp_ready;
+  wire [31:0]   adder_cfg_icb_rsp_rdata;
+  wire          adder_cfg_icb_rsp_err;
   
   e203_subsys_perips u_e203_subsys_perips (
     .pllbypass   (pllbypass   ),
@@ -781,7 +793,18 @@ e203_subsys_clint u_e203_subsys_clint(
     .qspi0_ro_icb_rsp_ready  (qspi0_ro_icb_rsp_ready),
     .qspi0_ro_icb_rsp_rdata  (qspi0_ro_icb_rsp_rdata),
 `endif//}
-                           
+
+    .adder_cfg_icb_cmd_valid (adder_cfg_icb_cmd_valid),
+    .adder_cfg_icb_cmd_ready (adder_cfg_icb_cmd_ready),
+    .adder_cfg_icb_cmd_read  (adder_cfg_icb_cmd_read),
+    .adder_cfg_icb_cmd_addr  (adder_cfg_icb_cmd_addr),
+    .adder_cfg_icb_cmd_wdata (adder_cfg_icb_cmd_wdata),
+
+    .adder_cfg_icb_cmd_wmask (adder_cfg_icb_cmd_wmask),
+    .adder_cfg_icb_rsp_valid (adder_cfg_icb_rsp_valid),
+    .adder_cfg_icb_rsp_ready (adder_cfg_icb_rsp_ready),
+    .adder_cfg_icb_rsp_rdata (adder_cfg_icb_rsp_rdata),
+    .adder_cfg_icb_rsp_err   (adder_cfg_icb_rsp_err),                           
 
     .io_pads_gpioA_i_ival        (io_pads_gpioA_i_ival),
     .io_pads_gpioA_o_oval        (gpioA_o_oval),
@@ -905,6 +928,23 @@ fake_qspi0_model_top u_fake_qspi0_model_top(
     .rst_n          (bus_rst_n)  
   );
 `endif//}
+
+
+add_top u_adder_top(
+    .icb_cmd_valid  (adder_cfg_icb_cmd_valid),
+    .icb_cmd_ready  (adder_cfg_icb_cmd_ready),
+    .icb_cmd_read   (adder_cfg_icb_cmd_read),
+    .icb_cmd_addr   (adder_cfg_icb_cmd_addr),
+    .icb_cmd_wdata  (adder_cfg_icb_cmd_wdata),
+    .icb_cmd_wmask  (adder_cfg_icb_cmd_wmask),
+    .icb_rsp_valid  (adder_cfg_icb_rsp_valid),
+    .icb_rsp_ready  (adder_cfg_icb_rsp_ready),
+    .icb_rsp_rdata  (adder_cfg_icb_rsp_rdata),
+    .icb_rsp_err    (adder_cfg_icb_rsp_err),
+
+    .clk            (hfclk    ),
+    .rst_n          (bus_rst_n) 
+);
 
 
 endmodule
