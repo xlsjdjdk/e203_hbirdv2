@@ -41,7 +41,7 @@ output                          icb_rsp_err
     wire [31:0]                 AUGEND      ;
     wire [31:0]                 CTRL        ;
     wire [31:0]                 SUM         ;
-    wire                        OFSIGN      ;
+    wire [ 1:0]                 OFSIGN      ;
     
 
 // slave interface
@@ -63,7 +63,7 @@ icb_slave icb_slave_u(
         .ADDEND                 (AUGEND[31:0]           ), 
         .CTRL                   (CTRL                   ), 
         .SUM                    (SUM   [31:0]           ),
-        .OFSIGN                 ({31'd0,OFSIGN}         )
+        .OFSIGN                 ({30'd0,OFSIGN}         )
     );
 
     wire enable = CTRL[0];

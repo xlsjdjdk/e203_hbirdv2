@@ -753,7 +753,7 @@ module e203_subsys_perips(
     .o14_icb_rsp_rdata  (expl_axi_icb_rsp_rdata),
 
 
-   //  *      
+   //  * Adder by xls    
     .o15_icb_enable     (1'b1),
 
     .o15_icb_cmd_valid  (adder_cfg_icb_cmd_valid),

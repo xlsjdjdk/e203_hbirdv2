@@ -16,7 +16,7 @@ module adder (
 	input 			   enable,
 	input			   clear,
 	output      [31:0] out,
-	output			   overflow
+	output		[1:0]  overflow
 );
 
 reg   [16:0]   lsum_d1, usum_d2;
@@ -30,7 +30,7 @@ assign carry_d1    = lsum_d1[16];
 assign usum_d2_nxt = carry_d1 + aup_d1 + bup_d1;
 assign out_64 	   = {usum_d2, lsum_d2};
 assign out         = out_64[31:0];
-assign overflow	   = usum_d2[16] ^ usum_d2[15];
+assign overflow	   = {{usum_d2[16] ^ usum_d2[15]}, {usum_d2[16]}}; //[1] for signed of, [0] for unsigned of.
 
 
 always @(posedge clk or posedge rst_n) begin
