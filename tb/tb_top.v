@@ -222,7 +222,7 @@ module tb_top();
   end
 
   initial begin
-    #40000000
+    #4000000000
         $display("Time Out !!!");
      $finish;
   end

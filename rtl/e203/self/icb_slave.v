@@ -1,25 +1,7 @@
-// +FHDR----------------------------------------------------------------------------
-// Project Name  : Soc_lab1
-// Author        : LKai-Xu
-// Created On    : 2022/06/04 20:50
-// Last Modified : 2023/03/21 20:56
-// File Name     : icb_slave.v
-// Description   : icb slave module
-//
-//
-// ---------------------------------------------------------------------------------
-// Modification History:
-// Date         By              Version                 Change Description
-// ---------------------------------------------------------------------------------
-// 2022/06/04   LKai-Xu         1.0                     Original
-// 2023/03/21   Lisp           
-// -FHDR----------------------------------------------------------------------------
-
-`define AUGEND_ADDR    12'h00
-`define ADDEND_ADDR    12'h04
-`define CTRL_ADDR      12'h08
-`define OFSIGN_ADDR    12'h0c
-`define SUM_ADDR       12'h10
+`define STAT_REG_ADDR           4'h0
+`define CONFIG_REG_ADDR         4'h4
+`define CALCBASE_REG_ADDR       4'h8
+`define RWBASE_REG_ADDR         4'hC
 
 
 module icb_slave(
@@ -41,12 +23,19 @@ module icb_slave(
     input           rst_n,
 
     // reg IO
-    output  reg [31:0]  AUGEND,
-    output  reg [31:0]  ADDEND,
-    output  reg [31:0]  CTRL,
-    
-    input       [31:0]  OFSIGN,
-    input       [31:0]  SUM
+    output  reg [15:0]  STAT_REG_WR,
+    output  reg [31:0]  CONFIG_REG,
+    output  reg [31:0]  CALCBASE_REG,
+    output  reg [31:0]  RWBASE_REG,
+    input       [15:0]  STAT_REG_RD,
+
+    output  reg [31:0]  sram_wr_data,
+    output  reg [12:0]  sram_wr_addr,
+    output  reg         sram_wr_en,
+
+    input       [31:0]  sram_rd_data,
+    output  reg [12:0]  sram_rd_addr,
+    output  reg         sram_rd_en
 
 );
 
@@ -73,39 +62,83 @@ end
 // ADDR and PARAM setting
 always@(negedge rst_n or posedge clk) begin
     if(!rst_n) begin
-        AUGEND <= 32'h0;
-        ADDEND <= 32'h0;
-        CTRL <= 32'h0;
+        STAT_REG_WR <= 32'h0;
+        CONFIG_REG <= 32'h0;
+        CALCBASE_REG <= 32'h0;
+        RWBASE_REG <= 32'b0;
+        sram_wr_data <= 0;
+        sram_wr_addr <= 0;
+        sram_wr_en <= 0;
     end
     else begin
         if(icb_cmd_valid & icb_cmd_ready & !icb_cmd_read) begin
-            case(icb_cmd_addr[11:0])
-                `AUGEND_ADDR:  AUGEND <= icb_cmd_wdata;
-                `ADDEND_ADDR:  ADDEND <= icb_cmd_wdata;
-                `CTRL_ADDR  :  CTRL   <= icb_cmd_wdata;
-            endcase
+            if (icb_cmd_addr[4] == 0) begin
+                case(icb_cmd_addr[3:0])
+                    `STAT_REG_ADDR     :     STAT_REG_WR <= icb_cmd_wdata;
+                    `CONFIG_REG_ADDR   :     CONFIG_REG <= icb_cmd_wdata;
+                    `CALCBASE_REG_ADDR :     CALCBASE_REG <= icb_cmd_wdata;
+                    `RWBASE_REG_ADDR   :     RWBASE_REG <= icb_cmd_wdata;
+                endcase
+            end
+            else begin
+                sram_wr_data <= icb_cmd_wdata;
+                sram_wr_addr <= icb_cmd_addr[11:5];
+                sram_wr_en <= 1;
+            end
         end
         else begin
-            if (CTRL[1]) begin
-                AUGEND <= 32'h0;
-                ADDEND <= 32'h0;
-                CTRL <= {31'h0, CTRL[0]};
-            end
+            STAT_REG_WR <= {{2'b0}, STAT_REG_WR[13:1], {1'b0}};
+            sram_wr_data <= 0;
+            sram_wr_addr <= 0;
+            sram_wr_en <= 0;
         end
     end
 end
+
+always@(*) begin
+    if(icb_cmd_valid & icb_cmd_ready & icb_cmd_read) begin
+        if (icb_cmd_addr[4] != 0) begin
+            sram_rd_en = 1'h1;
+            sram_rd_addr = icb_cmd_addr[11:5];
+        end
+        else begin
+            sram_rd_en = 1'h0;
+            sram_rd_addr = 8'h0;
+        end
+    end
+    else begin
+        sram_rd_en = 1'h0;
+        sram_rd_addr = 8'h0;
+    end
+end
+
+reg icb_rsp_valid_r;
+reg [31:0] icb_cmd_addr_r;
 
 // response valid, icb_rsp_valid
 always@(negedge rst_n or posedge clk) begin
     if(!rst_n) begin
         icb_rsp_valid <= 1'h0;
+        icb_rsp_valid_r <= 1'b0;
+        icb_cmd_addr_r <= 32'h0;
     end
     else begin
         if(icb_cmd_valid & icb_cmd_ready) begin
-            icb_rsp_valid <= 1'h1;
+            if (!icb_cmd_read) begin
+                icb_rsp_valid <= 1'h1;
+            end
+            else begin
+                icb_rsp_valid_r <= 1'h1;
+                icb_cmd_addr_r <= icb_cmd_addr;
+            end
         end
         else if(icb_rsp_valid & icb_rsp_ready) begin
             icb_rsp_valid <= 1'h0;
+        end
+        else if (icb_rsp_valid_r) begin
+            icb_rsp_valid_r <= 1'h0;
+            icb_cmd_addr_r <= 32'h0;
+            icb_rsp_valid <= 1'h1;
         end
         else begin
             icb_rsp_valid <= icb_rsp_valid;
@@ -119,19 +152,25 @@ always@(negedge rst_n or posedge clk) begin
         icb_rsp_rdata <= 32'h0;
     end
     else begin
-        if(icb_cmd_valid & icb_cmd_ready & icb_cmd_read) begin
-            case(icb_cmd_addr[11:0])
-                `AUGEND_ADDR:  icb_rsp_rdata <= AUGEND;
-                `ADDEND_ADDR:  icb_rsp_rdata <= ADDEND;
-                `CTRL_ADDR  :  icb_rsp_rdata <= CTRL;
-                `OFSIGN_ADDR:  icb_rsp_rdata <= OFSIGN;
-                `SUM_ADDR   :  icb_rsp_rdata <= SUM;
-            endcase
+        if (icb_rsp_valid_r) begin
+            if (icb_cmd_addr_r[4] == 0) begin
+                case(icb_cmd_addr_r[3:0])
+                   `STAT_REG_ADDR      :  icb_rsp_rdata <= {STAT_REG_RD,STAT_REG_WR};
+                    `CONFIG_REG_ADDR    :  icb_rsp_rdata <= CONFIG_REG;
+                    `CALCBASE_REG_ADDR  :  icb_rsp_rdata <= CALCBASE_REG;
+                    `RWBASE_REG_ADDR    :  icb_rsp_rdata <= RWBASE_REG;
+                endcase
+            end
+            else begin
+                icb_rsp_rdata <= sram_rd_data;
+            end
         end
         else begin
             icb_rsp_rdata <= 32'h0;
         end
     end
 end
+
+
 
 endmodule

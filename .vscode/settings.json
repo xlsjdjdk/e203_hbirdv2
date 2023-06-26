@@ -2,6 +2,7 @@
     "files.associations": {
         "hbird_sdk_soc.h": "c",
         "hbirdv2.h": "c",
-        "adder.h": "c"
+        "adder.h": "c",
+        "random": "c"
     }
 }
