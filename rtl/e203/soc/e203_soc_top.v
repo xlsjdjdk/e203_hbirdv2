@@ -97,6 +97,14 @@ module e203_soc_top(
 
  wire sysmem_icb_cmd_valid;
  wire sysmem_icb_cmd_ready;
+ wire sysmem_icb_cmd_read; 
+ wire [31:0] sysmem_icb_cmd_addr; 
+ wire [31:0] sysmem_icb_cmd_wdata;
+ wire [3:0]  sysmem_icb_cmd_wmask;
+ wire sysmem_icb_rsp_valid;
+ wire sysmem_icb_rsp_ready;
+ wire sysmem_icb_rsp_err;  
+ wire [31:0]  sysmem_icb_rsp_rdata;
 
  e203_subsys_top u_e203_subsys_top(
     .core_mhartid      (1'b0),
@@ -119,17 +127,17 @@ module e203_soc_top(
   `endif//}
 
   `ifdef E203_HAS_DTCM_EXTITF //{
-    .ext2dtcm_icb_cmd_valid  (1'b0),
-    .ext2dtcm_icb_cmd_ready  (),
-    .ext2dtcm_icb_cmd_addr   (`E203_DTCM_ADDR_WIDTH'b0 ),
-    .ext2dtcm_icb_cmd_read   (1'b0 ),
-    .ext2dtcm_icb_cmd_wdata  (32'b0),
-    .ext2dtcm_icb_cmd_wmask  (4'b0),
+    .ext2dtcm_icb_cmd_valid  (sysmem_icb_cmd_valid),
+    .ext2dtcm_icb_cmd_ready  (sysmem_icb_cmd_ready),
+    .ext2dtcm_icb_cmd_addr   (sysmem_icb_cmd_addr ),
+    .ext2dtcm_icb_cmd_read   (sysmem_icb_cmd_read ),
+    .ext2dtcm_icb_cmd_wdata  (sysmem_icb_cmd_wdata),
+    .ext2dtcm_icb_cmd_wmask  (sysmem_icb_cmd_wmask),
     
-    .ext2dtcm_icb_rsp_valid  (),
-    .ext2dtcm_icb_rsp_ready  (1'b0),
-    .ext2dtcm_icb_rsp_err    (),
-    .ext2dtcm_icb_rsp_rdata  (),
+    .ext2dtcm_icb_rsp_valid  (sysmem_icb_rsp_valid),
+    .ext2dtcm_icb_rsp_ready  (sysmem_icb_rsp_ready),
+    .ext2dtcm_icb_rsp_err    (sysmem_icb_rsp_err),
+    .ext2dtcm_icb_rsp_rdata  (sysmem_icb_rsp_rdata),
   `endif//}
 
   .sysper_icb_cmd_valid (sysper_icb_cmd_valid),
@@ -159,15 +167,15 @@ module e203_soc_top(
 
   .sysmem_icb_cmd_valid(sysmem_icb_cmd_valid),
   .sysmem_icb_cmd_ready(sysmem_icb_cmd_ready),
-  .sysmem_icb_cmd_read (), 
-  .sysmem_icb_cmd_addr (), 
-  .sysmem_icb_cmd_wdata(), 
-  .sysmem_icb_cmd_wmask(), 
+  .sysmem_icb_cmd_read (sysmem_icb_cmd_read), 
+  .sysmem_icb_cmd_addr (sysmem_icb_cmd_addr), 
+  .sysmem_icb_cmd_wdata(sysmem_icb_cmd_wdata), 
+  .sysmem_icb_cmd_wmask(sysmem_icb_cmd_wmask), 
 
-  .sysmem_icb_rsp_valid(sysmem_icb_cmd_valid),
-  .sysmem_icb_rsp_ready(sysmem_icb_cmd_ready),
-  .sysmem_icb_rsp_err  (1'b0  ),
-  .sysmem_icb_rsp_rdata(32'b0),
+  .sysmem_icb_rsp_valid(sysmem_icb_rsp_valid),
+  .sysmem_icb_rsp_ready(sysmem_icb_rsp_ready),
+  .sysmem_icb_rsp_err  (sysmem_icb_rsp_err),
+  .sysmem_icb_rsp_rdata(sysmem_icb_rsp_rdata),
 
   .io_pads_jtag_TCK_i_ival    (io_pads_jtag_TCK_i_ival    ),
   .io_pads_jtag_TCK_o_oval    (),

@@ -672,6 +672,7 @@ module e203_subsys_main(
 
     .gpioA_irq              (gpioA_irq ),
     .gpioB_irq              (gpioB_irq ),
+    .dma_irq                (dma_irq   ),
 
     .clk                    (hfclk  ),
     .rst_n                  (per_rst_n) 
@@ -713,17 +714,40 @@ e203_subsys_clint u_e203_subsys_clint(
   wire [32-1:0]            qspi0_ro_icb_rsp_rdata;
 
   //@<your_e203>/rtl/subsys/e203/e203_subsys_main.v
-  wire          adder_cfg_icb_cmd_valid;
-  wire          adder_cfg_icb_cmd_ready;
-  wire          adder_cfg_icb_cmd_read;
-  wire [31:0]   adder_cfg_icb_cmd_addr;
-  wire [31:0]   adder_cfg_icb_cmd_wdata;
-  wire [3:0]    adder_cfg_icb_cmd_wmask;
+  wire                     dma_cfg_icb_cmd_valid;
+  wire                     dma_cfg_icb_cmd_read; 
+  wire [31:0]              dma_cfg_icb_cmd_addr; 
+  wire [31:0]              dma_cfg_icb_cmd_wdata;
+  wire [3:0]               dma_cfg_icb_cmd_wmask;
+  wire                     dma_cfg_icb_cmd_ready;
+  wire                     dma_cfg_icb_rsp_ready;
+  wire                     dma_cfg_icb_rsp_valid;
+  wire [31:0]              dma_cfg_icb_rsp_rdata;
+  wire                     dma_cfg_icb_rsp_err;  
+                    
+  wire                     dma_icb_cmd_valid;    
+  wire                     dma_icb_cmd_read;     
+  wire [31:0]              dma_icb_cmd_addr;     
+  wire [31:0]              dma_icb_cmd_wdata;    
+  wire [3:0]               dma_icb_cmd_wmask;    
+  wire                     dma_icb_cmd_ready;    
+  wire                     dma_icb_rsp_ready;    
+  wire                     dma_icb_rsp_valid;    
+  wire [31:0]              dma_icb_rsp_rdata;    
+  wire                     dma_icb_rsp_err;     
 
-  wire          adder_cfg_icb_rsp_valid;
-  wire          adder_cfg_icb_rsp_ready;
-  wire [31:0]   adder_cfg_icb_rsp_rdata;
-  wire          adder_cfg_icb_rsp_err;
+  wire                     dma_irq;       
+
+  wire                     arbt_icb_cmd_valid;    
+  wire                     arbt_icb_cmd_read;     
+  wire [31:0]              arbt_icb_cmd_addr;     
+  wire [`E203_XLEN-1:0]    arbt_icb_cmd_wdata;    
+  wire [3:0]               arbt_icb_cmd_wmask;    
+  wire                     arbt_icb_cmd_ready;    
+  wire                     arbt_icb_rsp_ready;    
+  wire                     arbt_icb_rsp_valid;    
+  wire [`E203_XLEN-1:0]    arbt_icb_rsp_rdata;    
+  wire                     arbt_icb_rsp_err;       
   
   e203_subsys_perips u_e203_subsys_perips (
     .pllbypass   (pllbypass   ),
@@ -794,17 +818,17 @@ e203_subsys_clint u_e203_subsys_clint(
     .qspi0_ro_icb_rsp_rdata  (qspi0_ro_icb_rsp_rdata),
 `endif//}
 
-    .adder_cfg_icb_cmd_valid (adder_cfg_icb_cmd_valid),
-    .adder_cfg_icb_cmd_ready (adder_cfg_icb_cmd_ready),
-    .adder_cfg_icb_cmd_read  (adder_cfg_icb_cmd_read),
-    .adder_cfg_icb_cmd_addr  (adder_cfg_icb_cmd_addr),
-    .adder_cfg_icb_cmd_wdata (adder_cfg_icb_cmd_wdata),
-
-    .adder_cfg_icb_cmd_wmask (adder_cfg_icb_cmd_wmask),
-    .adder_cfg_icb_rsp_valid (adder_cfg_icb_rsp_valid),
-    .adder_cfg_icb_rsp_ready (adder_cfg_icb_rsp_ready),
-    .adder_cfg_icb_rsp_rdata (adder_cfg_icb_rsp_rdata),
-    .adder_cfg_icb_rsp_err   (adder_cfg_icb_rsp_err),                           
+    .dma_cfg_icb_cmd_valid  (dma_cfg_icb_cmd_valid),
+    .dma_cfg_icb_cmd_ready  (dma_cfg_icb_cmd_ready),
+    .dma_cfg_icb_cmd_read   (dma_cfg_icb_cmd_read),
+    .dma_cfg_icb_cmd_addr   (dma_cfg_icb_cmd_addr),
+    .dma_cfg_icb_cmd_wdata  (dma_cfg_icb_cmd_wdata),
+    .dma_cfg_icb_cmd_wmask  (dma_cfg_icb_cmd_wmask),
+    
+    .dma_cfg_icb_rsp_valid  (dma_cfg_icb_rsp_valid),
+    .dma_cfg_icb_rsp_ready  (dma_cfg_icb_rsp_ready),
+    .dma_cfg_icb_rsp_rdata  (dma_cfg_icb_rsp_rdata),
+    .dma_cfg_icb_rsp_err    (dma_cfg_icb_rsp_err),                          
 
     .io_pads_gpioA_i_ival        (io_pads_gpioA_i_ival),
     .io_pads_gpioA_o_oval        (gpioA_o_oval),
@@ -860,17 +884,17 @@ e203_subsys_clint u_e203_subsys_clint(
 
 e203_subsys_mems u_e203_subsys_mems(
 
-    .mem_icb_cmd_valid  (mem_icb_cmd_valid),
-    .mem_icb_cmd_ready  (mem_icb_cmd_ready),
-    .mem_icb_cmd_addr   (mem_icb_cmd_addr ),
-    .mem_icb_cmd_read   (mem_icb_cmd_read ),
-    .mem_icb_cmd_wdata  (mem_icb_cmd_wdata),
-    .mem_icb_cmd_wmask  (mem_icb_cmd_wmask),
+    .mem_icb_cmd_valid  (arbt_icb_cmd_valid),
+    .mem_icb_cmd_ready  (arbt_icb_cmd_ready),
+    .mem_icb_cmd_addr   (arbt_icb_cmd_addr ),
+    .mem_icb_cmd_read   (arbt_icb_cmd_read ),
+    .mem_icb_cmd_wdata  (arbt_icb_cmd_wdata),
+    .mem_icb_cmd_wmask  (arbt_icb_cmd_wmask),
     
-    .mem_icb_rsp_valid  (mem_icb_rsp_valid),
-    .mem_icb_rsp_ready  (mem_icb_rsp_ready),
-    .mem_icb_rsp_err    (mem_icb_rsp_err  ),
-    .mem_icb_rsp_rdata  (mem_icb_rsp_rdata),
+    .mem_icb_rsp_valid  (arbt_icb_rsp_valid),
+    .mem_icb_rsp_ready  (arbt_icb_rsp_ready),
+    .mem_icb_rsp_err    (arbt_icb_rsp_err  ),
+    .mem_icb_rsp_rdata  (arbt_icb_rsp_rdata),
 
     .sysmem_icb_cmd_valid  (sysmem_icb_cmd_valid),
     .sysmem_icb_cmd_ready  (sysmem_icb_cmd_ready),
@@ -929,21 +953,91 @@ fake_qspi0_model_top u_fake_qspi0_model_top(
   );
 `endif//}
 
+sirv_gnrl_icb_arbt # (
+    .ARBT_SCHEME (0),// Priority based
+    .ALLOW_0CYCL_RSP (0),
+    .ARBT_NUM   (2),
+    .ARBT_PTR_W (1),
+    .AW         (32),
+    .DW         (`E203_XLEN) 
+) u_biu_icb_arbt(
+    .o_icb_cmd_valid        (arbt_icb_cmd_valid )     ,
+    .o_icb_cmd_ready        (arbt_icb_cmd_ready )     ,
+    .o_icb_cmd_read         (arbt_icb_cmd_read )      ,
+    .o_icb_cmd_addr         (arbt_icb_cmd_addr )      ,
+    .o_icb_cmd_wdata        (arbt_icb_cmd_wdata )     ,
+    .o_icb_cmd_wmask        (arbt_icb_cmd_wmask)      ,
+    .o_icb_cmd_burst        ()     ,
+    .o_icb_cmd_beat         ()     ,
+    .o_icb_cmd_excl         ()     ,
+    .o_icb_cmd_lock         ()     ,
+    .o_icb_cmd_size         ()     ,
+    .o_icb_cmd_usr          ()     ,
+                                  
+    .o_icb_rsp_valid        (arbt_icb_rsp_valid )     ,
+    .o_icb_rsp_ready        (arbt_icb_rsp_ready )     ,
+    .o_icb_rsp_err          (arbt_icb_rsp_err)        ,
+    .o_icb_rsp_excl_ok      ()    ,
+    .o_icb_rsp_rdata        (arbt_icb_rsp_rdata )     ,
+    .o_icb_rsp_usr          ()    ,
+                                
+    .i_bus_icb_cmd_ready    ({dma_icb_cmd_ready, mem_icb_cmd_ready} ) ,
+    .i_bus_icb_cmd_valid    ({dma_icb_cmd_valid, mem_icb_cmd_valid} ) ,
+    .i_bus_icb_cmd_read     ({dma_icb_cmd_read, mem_icb_cmd_read} )  ,
+    .i_bus_icb_cmd_addr     ({dma_icb_cmd_addr, mem_icb_cmd_addr} )  ,
+    .i_bus_icb_cmd_wdata    ({dma_icb_cmd_wdata, mem_icb_cmd_wdata} ) ,
+    .i_bus_icb_cmd_wmask    ({dma_icb_cmd_wmask, mem_icb_cmd_wmask})  ,
+    .i_bus_icb_cmd_burst    (),
+    .i_bus_icb_cmd_beat     (),
+    .i_bus_icb_cmd_excl     (),
+    .i_bus_icb_cmd_lock     (),
+    .i_bus_icb_cmd_size     (),
+    .i_bus_icb_cmd_usr      (),
+                                  
+    .i_bus_icb_rsp_valid    ({dma_icb_rsp_valid, mem_icb_rsp_valid} ) ,
+    .i_bus_icb_rsp_ready    ({dma_icb_rsp_ready, mem_icb_rsp_ready} ) ,
+    .i_bus_icb_rsp_err      ({dma_icb_rsp_err, mem_icb_rsp_err})    ,
+    .i_bus_icb_rsp_excl_ok  (),
+    .i_bus_icb_rsp_rdata    ({dma_icb_rsp_rdata, mem_icb_rsp_rdata}) ,
+    .i_bus_icb_rsp_usr      () ,
+                              
+    .clk                    (hfclk  )                 ,
+    .rst_n                  (bus_rst_n)
+  );
 
-add_top u_adder_top(
-    .icb_cmd_valid  (adder_cfg_icb_cmd_valid),
-    .icb_cmd_ready  (adder_cfg_icb_cmd_ready),
-    .icb_cmd_read   (adder_cfg_icb_cmd_read),
-    .icb_cmd_addr   (adder_cfg_icb_cmd_addr),
-    .icb_cmd_wdata  (adder_cfg_icb_cmd_wdata),
-    .icb_cmd_wmask  (adder_cfg_icb_cmd_wmask),
-    .icb_rsp_valid  (adder_cfg_icb_rsp_valid),
-    .icb_rsp_ready  (adder_cfg_icb_rsp_ready),
-    .icb_rsp_rdata  (adder_cfg_icb_rsp_rdata),
-    .icb_rsp_err    (adder_cfg_icb_rsp_err),
 
-    .clk            (hfclk    ),
-    .rst_n          (bus_rst_n) 
+dma_top #(.DATA_WIDTH(`E203_XLEN), .FIFO_DEPTH(512))
+u_dma_top(
+    // config port, slave mod
+    .dma_cfg_icb_cmd_valid  (dma_cfg_icb_cmd_valid),
+    .dma_cfg_icb_cmd_read   (dma_cfg_icb_cmd_read),
+    .dma_cfg_icb_cmd_addr   (dma_cfg_icb_cmd_addr),
+    .dma_cfg_icb_cmd_wdata  (dma_cfg_icb_cmd_wdata),
+    .dma_cfg_icb_cmd_wmask  (dma_cfg_icb_cmd_wmask),
+    .dma_cfg_icb_cmd_ready  (dma_cfg_icb_cmd_ready),
+
+    .dma_cfg_icb_rsp_ready  (dma_cfg_icb_rsp_ready),
+    .dma_cfg_icb_rsp_valid  (dma_cfg_icb_rsp_valid),
+    .dma_cfg_icb_rsp_rdata  (dma_cfg_icb_rsp_rdata),
+    .dma_cfg_icb_rsp_err    (dma_cfg_icb_rsp_err),
+
+    // data port, master mod
+    .dma_icb_cmd_valid      (dma_icb_cmd_valid),
+    .dma_icb_cmd_read       (dma_icb_cmd_read),
+    .dma_icb_cmd_addr       (dma_icb_cmd_addr),
+    .dma_icb_cmd_wdata      (dma_icb_cmd_wdata),
+    .dma_icb_cmd_wmask      (dma_icb_cmd_wmask),
+    .dma_icb_cmd_ready      (dma_icb_cmd_ready),
+
+    .dma_icb_rsp_ready      (dma_icb_rsp_ready),
+    .dma_icb_rsp_valid      (dma_icb_rsp_valid),
+    .dma_icb_rsp_rdata      (dma_icb_rsp_rdata),
+    .dma_icb_rsp_err        (dma_icb_rsp_err),
+
+    .dma_irq                (dma_irq),
+
+    .clk                    (hfclk    ),
+    .rst_n                  (bus_rst_n) 
 );
 
 

@@ -76,17 +76,17 @@ module e203_subsys_perips(
   input                      qspi0_ro_icb_rsp_ready,
   output [32-1:0]            qspi0_ro_icb_rsp_rdata,
 
-  output                     adder_cfg_icb_cmd_valid,
-  input                      adder_cfg_icb_cmd_ready,
-  output                     adder_cfg_icb_cmd_read,
-  output [31:0]              adder_cfg_icb_cmd_addr,
-  output [31:0]              adder_cfg_icb_cmd_wdata,
-  output [3:0]               adder_cfg_icb_cmd_wmask,
+  output                     dma_cfg_icb_cmd_valid,
+  input                      dma_cfg_icb_cmd_ready,
+  output                     dma_cfg_icb_cmd_read,
+  output [32-1:0]            dma_cfg_icb_cmd_addr,
+  output [32-1:0]            dma_cfg_icb_cmd_wdata,
+  output [3:0]               dma_cfg_icb_cmd_wmask,
 
-  input                      adder_cfg_icb_rsp_valid,
-  output                     adder_cfg_icb_rsp_ready,
-  input  [31:0]              adder_cfg_icb_rsp_rdata,
-  input                      adder_cfg_icb_rsp_err,
+  input                      dma_cfg_icb_rsp_valid,
+  output                     dma_cfg_icb_rsp_ready,
+  input  [32-1:0]            dma_cfg_icb_rsp_rdata,
+  input                      dma_cfg_icb_rsp_err,
 
   input  [32-1:0]            io_pads_gpioA_i_ival,
   output [32-1:0]            io_pads_gpioA_o_oval,
@@ -753,26 +753,26 @@ module e203_subsys_perips(
     .o14_icb_rsp_rdata  (expl_axi_icb_rsp_rdata),
 
 
-   //  * Adder by xls    
+   //  * dma by xls    
     .o15_icb_enable     (1'b1),
 
-    .o15_icb_cmd_valid  (adder_cfg_icb_cmd_valid),
-    .o15_icb_cmd_ready  (adder_cfg_icb_cmd_ready),
-    .o15_icb_cmd_addr   (adder_cfg_icb_cmd_addr),
-    .o15_icb_cmd_read   (adder_cfg_icb_cmd_read),
-    .o15_icb_cmd_wdata  (adder_cfg_icb_cmd_wdata),
-    .o15_icb_cmd_wmask  (adder_cfg_icb_cmd_wmask),
+    .o15_icb_cmd_valid  (dma_cfg_icb_cmd_valid),
+    .o15_icb_cmd_ready  (dma_cfg_icb_cmd_ready),
+    .o15_icb_cmd_addr   (dma_cfg_icb_cmd_addr),
+    .o15_icb_cmd_read   (dma_cfg_icb_cmd_read),
+    .o15_icb_cmd_wdata  (dma_cfg_icb_cmd_wdata),
+    .o15_icb_cmd_wmask  (dma_cfg_icb_cmd_wmask),
     .o15_icb_cmd_lock   (),
     .o15_icb_cmd_excl   (),
     .o15_icb_cmd_size   (),
     .o15_icb_cmd_burst  (),
     .o15_icb_cmd_beat   (),
     
-    .o15_icb_rsp_valid  (adder_cfg_icb_rsp_valid),
-    .o15_icb_rsp_ready  (adder_cfg_icb_rsp_ready),
-    .o15_icb_rsp_err    (adder_cfg_icb_rsp_err),
+    .o15_icb_rsp_valid  (dma_cfg_icb_rsp_valid),
+    .o15_icb_rsp_ready  (dma_cfg_icb_rsp_ready),
+    .o15_icb_rsp_err    (dma_cfg_icb_rsp_err),
     .o15_icb_rsp_excl_ok(1'b0),
-    .o15_icb_rsp_rdata  (adder_cfg_icb_rsp_rdata),
+    .o15_icb_rsp_rdata  (dma_cfg_icb_rsp_rdata),
 
     .clk           (clk  ),
     .rst_n         (bus_rst_n) 
