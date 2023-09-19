@@ -2,9 +2,9 @@ SIM_DIR     := ${PWD}
 RUN_DIR      := ${PWD}/run
 
 #TESTNAME     := rv32ui-p-add 
-TESTNAME    := dma_test
+TESTNAME    := demo_spi
 #TESTCASE     := ${RUN_DIR}/../../riscv-tools/riscv-tests/isa/generated/${TESTNAME}
-TESTCASE     := ${RUN_DIR}/../../hbird-sdk/application/baremetal/dma_test/${TESTNAME}
+TESTCASE     := ${RUN_DIR}/../../hbird-sdk/application/baremetal/demo_spi/${TESTNAME}
 
 SIM          := iverilog 
 DUMPWAVE     := 1
